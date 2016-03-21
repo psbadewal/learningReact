@@ -1,35 +1,33 @@
-/** @jsx React.DOM */
+'use strict';
 
 // Simple pure-React component so we don't have to remember
 // Bootstrap's classes
 var BootstrapButton = React.createClass({
   render: function() {
-    // transferPropsTo() is smart enough to merge classes provided
-    // to this component.
-    return this.transferPropsTo(
-      <a href="javascript:;" role="button" className="btn">
-        {this.props.children}
-      </a>
+    return (
+      <a {...this.props}
+        href="javascript:;"
+        role="button"
+        className={(this.props.className || '') + ' btn'} />
     );
   }
 });
 
 var BootstrapModal = React.createClass({
   // The following two methods are the only places we need to
-  // integrate with Bootstrap or jQuery!
+  // integrate Bootstrap or jQuery with the components lifecycle methods.
   componentDidMount: function() {
     // When the component is added, turn it into a modal
-    $(this.getDOMNode())
-      .modal({backdrop: 'static', keyboard: false, show: false})
+    $(this.refs.root).modal({backdrop: 'static', keyboard: false, show: false});
   },
   componentWillUnmount: function() {
-    $(this.getDOMNode()).off('hidden', this.handleHidden);
+    $(this.refs.root).off('hidden', this.handleHidden);
   },
   close: function() {
-    $(this.getDOMNode()).modal('hide');
+    $(this.refs.root).modal('hide');
   },
   open: function() {
-    $(this.getDOMNode()).modal('show');
+    $(this.refs.root).modal('show');
   },
   render: function() {
     var confirmButton = null;
@@ -46,29 +44,33 @@ var BootstrapModal = React.createClass({
     }
     if (this.props.cancel) {
       cancelButton = (
-        <BootstrapButton onClick={this.handleCancel}>
+        <BootstrapButton onClick={this.handleCancel} className="btn-default">
           {this.props.cancel}
         </BootstrapButton>
       );
     }
 
     return (
-      <div className="modal hide fade">
-        <div className="modal-header">
-          <button
-            type="button"
-            className="close"
-            onClick={this.handleCancel}
-            dangerouslySetInnerHTML={{__html: '&times'}}
-          />
-          <h3>{this.props.title}</h3>
-        </div>
-        <div className="modal-body">
-          {this.props.children}
-        </div>
-        <div className="modal-footer">
-          {cancelButton}
-          {confirmButton}
+      <div className="modal fade" ref="root">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button
+                type="button"
+                className="close"
+                onClick={this.handleCancel}>
+                &times;
+              </button>
+              <h3>{this.props.title}</h3>
+            </div>
+            <div className="modal-body">
+              {this.props.children}
+            </div>
+            <div className="modal-footer">
+              {cancelButton}
+              {confirmButton}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -107,7 +109,9 @@ var Example = React.createClass({
     return (
       <div className="example">
         {modal}
-        <BootstrapButton onClick={this.openModal}>Open modal</BootstrapButton>
+        <BootstrapButton onClick={this.openModal} className="btn-default">
+          Open modal
+        </BootstrapButton>
       </div>
     );
   },
@@ -119,4 +123,4 @@ var Example = React.createClass({
   }
 });
 
-React.renderComponent(<Example />, document.getElementById('jqueryexample'));
+ReactDOM.render(<Example />, document.getElementById('jqueryexample'));
